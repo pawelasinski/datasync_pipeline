@@ -1,0 +1,51 @@
+x-datasync_pipeline-common:
+  volumes: &datasync_pipeline-common-vol
+    - ./results:/app/results
+  environment:
+    &datasync_pipeline-common-env
+    RESULTS_PATH: /app/results
+  networks: &datasync_pipeline-common-net
+    - datasync_pipeline_network
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: datasync_pipeline_server
+    ports:
+      - "50051:50051"
+    environment:
+      <<: *datasync_pipeline-common-env
+    volumes: *datasync_pipeline-common-vol
+    networks: *datasync_pipeline-common-net
+
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    container_name: datasync_pipeline_client
+    depends_on:
+      - server
+    environment:
+      <<: *datasync_pipeline-common-env
+      SERVER_HOST: datasync_pipeline_server
+    volumes: *datasync_pipeline-common-vol
+    networks: *datasync_pipeline-common-net
+
+  analysis:
+    build:
+      context: .
+      dockerfile: analysis/Dockerfile
+    container_name: datasync_pipeline_analysis
+    depends_on:
+      - client
+    environment:
+      <<: *datasync_pipeline-common-env
+    volumes: *datasync_pipeline-common-vol
+    networks: *datasync_pipeline-common-net
+
+networks:
+  datasync_pipeline_network:
+    name: datasync_pipeline_network
+    driver: bridge

@@ -1,0 +1,4 @@
+grpcio==1.62.0
+grpcio-tools==1.62.0
+flatbuffers==24.3.7
+matplotlib==3.8.3

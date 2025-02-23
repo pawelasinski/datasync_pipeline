@@ -1,0 +1,13 @@
+2025-02-23 14:03:50,903 - server - INFO - Starting gRPC server on port 50051.
+2025-02-23 14:03:50,916 - server - INFO - Server started. Press Ctrl+C to stop.
+2025-02-23 14:03:51,170 - server - INFO - Received 1000 metrics.
+2025-02-23 14:03:51,195 - storage - INFO - Saved 1000 metrics to /app/results/metrics.json
+2025-02-23 14:03:51,197 - storage - INFO - Saved 1000 metrics to /app/results/metrics.proto.bin
+2025-02-23 14:03:51,310 - storage - INFO - Saved 1000 metrics to /app/results/metrics.flatbuf
+2025-02-23 14:03:51,351 - deserialize_perfomance - INFO - JSON deserialization took 0.0349 seconds, size: 168320 bytes.
+2025-02-23 14:03:51,364 - deserialize_perfomance - INFO - Protobuf deserialization took 0.0090 seconds, size: 52890 bytes.
+2025-02-23 14:03:51,370 - deserialize_perfomance - INFO - FlatBuffers deserialization took 0.0047 seconds, size: 52890 bytes.
+2025-02-23 14:03:51,399 - deserialize_perfomance - INFO - Processed 1000 metrics in performance measurement.
+2025-02-23 14:03:51,404 - server - INFO - Metrics processed successfully.
+2025-02-23 14:06:13,880 - server - INFO - Shutting down server...
+2025-02-23 14:06:13,885 - server - INFO - Server stopped.

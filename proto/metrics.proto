@@ -1,0 +1,30 @@
+syntax = "proto3";  // В proto3 все поля опциональны, и если их не указать, они принимают значения по умолчанию.
+
+message ServerMetrics {
+  string server_id = 1;  // UTF-8-cтрока.
+  float cpu_usage = 2;  // 32-битное число с плавающей точкой.
+  float memory_usage = 3;
+  float disk_usage = 4;
+  string timestamp = 5;
+}
+
+message MetricsRequest {  // Запрос, содержащий массив метрик.
+  repeated ServerMetrics metrics = 1;  // Ключевое слово repeated указывает, что поле metrics — это список (массив) элементов типа ServerMetrics.
+}
+
+message MetricsResponse {  // Ответ от сервера.
+  string message = 1;
+}
+
+service MetricsService {  // Определяем gRPC-сервис MetricsService с одним методом (интерфейс для отправки метрик от клиента к серверу через gRPC).
+  rpc SendMetrics (MetricsRequest) returns (MetricsResponse) {}
+}
+/*
+ * service — ключевое слово для описания gRPC-сервиса.
+ * rpc SendMetrics (MetricsRequest) returns (MetricsResponse) {}:
+ * + rpc — удалённый вызов процедуры (remote procedure call).
+ * + SendMetrics — имя метода.
+ * + (MetricsRequest) — входной параметр (объект MetricsRequest).
+ * + returns (MetricsResponse) — возвращаемый результат (объект MetricsResponse).
+ * + {} — пустое тело (без опций, таких как потоковая передача).
+ */

@@ -1,0 +1,8 @@
+2025-02-23 14:03:51,077 - client - INFO - Starting client, connecting to datasync_pipeline_server:50051
+2025-02-23 14:03:51,080 - client - INFO - Metrics validated successfully.
+2025-02-23 14:03:51,083 - client - INFO - JSON serialization took 0.0028s
+2025-02-23 14:03:51,085 - client - INFO - Protobuf serialization took 0.0013s
+2025-02-23 14:03:51,149 - client - INFO - FlatBuffers serialization took 0.0638s
+2025-02-23 14:03:51,153 - client - INFO - Serialization times saved to serialize_times.json
+2025-02-23 14:03:51,167 - client - INFO - gRPC server is ready.
+2025-02-23 14:03:51,409 - client - INFO - Server response: Data received and processed.
