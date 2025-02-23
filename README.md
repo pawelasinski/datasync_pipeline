@@ -1,6 +1,6 @@
 # DataSync Pipeline
 
-Данный мини-проект демонстрирует использование форматов сериализации Protobuf и FlatBuffers.
+This mini-project showcases how to use Protobuf and FlatBuffers for data serialization.
 
 ## Возможности
 
@@ -93,6 +93,8 @@ datasync_pipeline/
 - ...
 
 ## Лицензия
+
+[MIT License](./LICENSE)
 
 ## Автор
 
