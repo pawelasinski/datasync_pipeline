@@ -1,102 +1,102 @@
 # DataSync Pipeline
 
-This mini-project showcases how to use Protobuf and FlatBuffers for data serialization.
+This mini-project showcases how to use **Protobuf** and **FlatBuffers** for data serialization.
 
-## Возможности
+## Features
 
-- Генерация синтетических метрик серверов (CPU, память, диск).
-- Сериализация данных в JSON, Protobuf и FlatBuffers.
-- Передача данных через gRPC.
-- Сравнение размера файлов и времени сериализации/десериализации.
-- Построение графиков с помощью Matplotlib.
-- Логирование всех операций в файлы и консоль.
-- Проверки на ошибки (доступность сервера, корректность данных).
+- Generation of synthetic server metrics (CPU, memory, disk).
+- Data serialization in JSON, Protobuf, and FlatBuffers.
+- Data transfer via gRPC.
+- Comparison of file sizes and serialization/deserialization times.
+- Graph generation using Matplotlib.
+- _Logging of all operations to files and the console._
+- _Error checking (server availability, data correctness)._
 
-## Требования
+## Prerequisites
 
 - Docker
 - Docker Compose
 
-## Установка и запуск
+## Installation and Execution
 
-1. **Склонируйте репозиторий**:
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/pawelasinski/datasync_pipeline.git
    cd datasync_pipeline
    ```
 
-2. **Запустите проект**:
+2. **Run the project**:
    ```bash
    docker compose up --build --no-cache
    ```
-    - Сервер запустится на порту `50051`.
-    - Клиент сгенерирует данные и отправит их на сервер.
-    - Соответсвующий скрипт проанализирует данные и построит графики на основе их анализа.
+   - The server will start on port `50051`.
+   - The client will generate data and send it to the server.
+   - The corresponding script will analyze the data and build graphs based on the analysis.
 
-3. **Проверьте результаты**:
-    - Папка `results/` будет содержать:
-        - `metrics.json`, `metrics.proto.bin`, `metrics.flatbuf` — сохраненные данные.
-        - `serialize_times.json`, `deserialize_times.json` — замеры времени сериализации/десериализации.
-        - `size_comparison.png`, `performance_comparison.png` — графики.
-        - `logs/client.log`, `logs/server.log`, `logs/analysis.log` — логи.
+3. **Check the results**:
+   - The `results/` folder will contain:
+     - `metrics.json`, `metrics.proto.bin`, `metrics.flatbuf` — saved data.
+     - `serialize_times.json`, `deserialize_times.json` — measurements of serialization/deserialization times.
+     - `size_comparison.png`, `performance_comparison.png` — graphs.
+     - `logs/client.log`, `logs/server.log`, `logs/analysis.log` — logs.
 
-4. **Остановите контейнеры**:
+4. **Stop the containers**:
    ```bash
    docker compose down
    ```
-    - Для очистки томов добавьте флаг `--volumes`: `docker compose down --volumes`.
+   - To remove volumes as well, add the flag `--volumes`: `docker compose down --volumes`.
 
-## Файловая структура проекта
+## Project File Structure
 
 ```text
 datasync_pipeline/
-├── client/                          # Клиентская часть
-│   ├── Dockerfile                      # Docker-файл для клиента
-│   ├── client.py                       # Генерация данных и отправка через gRPC
-│   ├── data_generator.py               # Генерация синтетических метрик
-│   └── serializers.py                  # Логика сериализации (JSON, Protobuf, FlatBuffers)
-├── server/                          # Серверная часть
-│   ├── Dockerfile                      # Docker-файл для сервера
-│   ├── server.py                       # gRPC-сервер для приема данных
-│   ├── storage.py                      # Сохранение данных в файлы
-│   └── deserialize_performance.py      # Измерение времени и размера
-├── proto/                           # Protobuf-схемы
-│   └── metrics.proto                   # Схема для метрик серверов
-├── flatbuffers_schema/              # FlatBuffers-схемы
-│   └── metrics.fbs                     # Схема для метрик серверов
-├── analysis/                        # Анализ результатов
-│   ├── Dockerfile                      # Docker-файл для анализа
-│   └── analyze.py                      # Сравнение и построение графиков
-├── results/                         # Папка для результатов (файлов с данными, графиков и логов; будет монтироваться как том)
-│   ├── logs/                           # Папка для логов (создается автоматически)
-│   └── ...                             # Файлы с данными и графики
-├── README.md                        # Описание проекта
-├── docker-compose.yml               # Файл для управления всеми сервисами
-└── requirements.txt                 # Зависимости
+├── client/                          # Client side
+│   ├── Dockerfile                      # Dockerfile for the client
+│   ├── client.py                       # Data generation and sending via gRPC
+│   ├── data_generator.py               # Generation of synthetic metrics
+│   └── serializers.py                  # Serialization logic (JSON, Protobuf, FlatBuffers)
+├── server/                          # Server side
+│   ├── Dockerfile                      # Dockerfile for the server
+│   ├── server.py                       # gRPC server for receiving data
+│   ├── storage.py                      # Saving data to files
+│   └── deserialize_performance.py      # Measuring time and size
+├── proto/                           # Protobuf schemas
+│   └── metrics.proto                   # Schema for server metrics
+├── flatbuffers_schema/              # FlatBuffers schemas
+│   └── metrics.fbs                     # Schema for server metrics
+├── analysis/                        # Results analysis
+│   ├── Dockerfile                      # Dockerfile for the analysis
+│   └── analyze.py                      # Comparison and graph generation
+├── results/                         # Folder for results (data files, graphs, and logs; will be mounted as a volume)
+│   ├── logs/                           # Folder for logs (created automatically)
+│   └── ...                             # Data files and graphs
+├── README.md                        # Project description
+├── docker-compose.yml               # File for managing all services
+└── requirements.txt                 # Dependencies
 ```
 
-## Пример логов
+## Example Logs
 
 ```
 ...
-2025-02-22 10:00:01,123 - INFO - JSON deserialization took 0.0023 seconds, size: 128 bytes
-2025-02-22 10:00:01,124 - INFO - Protobuf deserialization took 0.0015 seconds, size: 64 bytes
-2025-02-22 10:00:01,125 - INFO - FlatBuffers deserialization took 0.0010 seconds, size: 80 bytes
+2025-02-22 10:00:01,123 - INFO - JSON deserialization took 0.0023 seconds, size: 128 bytes.
+2025-02-22 10:00:01,124 - INFO - Protobuf deserialization took 0.0015 seconds, size: 64 bytes.
+2025-02-22 10:00:01,125 - INFO - FlatBuffers deserialization took 0.0010 seconds, size: 80 bytes.
 2025-02-22 10:00:01,126 - INFO - Processed 2 metrics in performance measurement.
 ...
 ```
 
-## Возможное расширение проекта
+## Possible Project Extensions
 
-- Интегрировать реальные данные вместо синтетических.
-- Добавить поддержку других форматов (например, Avro).
+- Integrate real data instead of synthetic.
+- Add support for other formats (e.g., Avro).
 - ...
 
-## Лицензия
+## License
 
 [MIT License](./LICENSE)
 
-## Автор
+## Author
 
 Pawel Asinski (pawel.asinski@gmail.com)
 
@@ -104,176 +104,167 @@ Pawel Asinski (pawel.asinski@gmail.com)
 
 ## Protobuf vs. FlatBuffers
 
-**Protobuf** (Protocol Buffers) и **FlatBuffers** — это два бинарных формата сериализации данных, разработанные Google.
-Они применяются для эффективной передачи структурированных данных и подходят для различных сценариев: от микросервисов и
-IoT-устройств до игровых движков и мобильных приложений.
+**Protobuf** (Protocol Buffers) and **FlatBuffers** are two binary data serialization formats developed by Google. They are used for efficient transmission of structured data and are suitable for a variety of scenarios: from microservices and IoT devices to game engines and mobile applications.
 
-### Краткий обзор
+### Brief Overview
 
-Основной фокус Protobuf — эффективная сериализация структурированных данных для сетевых передач (RPC, микросервисы и
-т.д.), FlatBuffers — минимизация копирования данных (zero-copy) и быстрый прямой доступ к ним без предварительного
-парсинга.
+Protobuf focuses on the efficient serialization of structured data for network transmission (RPC, microservices, etc.), whereas FlatBuffers minimizes data copying (zero-copy) and provides fast direct access to data without pre-parsing.
 
-### Структура форматов
+### Format Structures
 
 #### Protobuf
 
-1. **Определение сообщений** в `.proto`-файлах:
+1. **Message definition** in `.proto` files:
    ```proto
    message Person {
        string name = 1;
        int32 age = 2;
    }
    ```
-2. Данные записываются (кодируются) как поток байтов с **тегами** (номер поля + тип). Каждое поле имеет номер (например,
-   name = 1, age = 2), и перед значением идет тег, который говорит: "Это поле номер 1, вот его данные". Это делает
-   сериализацию компактной и даёт возможность пропускать неизвестные поля.
+2. Data is encoded as a stream of bytes with **tags** (field number + type). Each field has a number (e.g., name = 1, age = 2), and a tag precedes the value to indicate: "This is field number 1, here is its data." This makes serialization compact and allows skipping unknown fields.
     ```text
     [0A 05 50 61 77 65 6C] [10 1C]
      field 1: "Pawel"   field 2: 28
     ```
-   Здесь:
-    - 0A — это тег для строки (поле 1).
-    - 05 — длина строки, потом "Pawel".
-    - 10 — тег для числа (поле 2).
-    - 1C — это 28.
-3. Данные компактные, но их нужно парсить при чтении: программа разбирает теги и значения, создает объекты в памяти.
+   Here:
+    - `0A` is the tag for the string (field 1).
+    - `05` is the length of the string, followed by "Pawel".
+    - `10` is the tag for the number (field 2).
+    - `1C` represents 28.
+3. Although the data is compact, it must be parsed upon reading: the program interprets the tags and values and creates objects in memory.
 
 #### FlatBuffers
 
-1. **Определение схемы** в `.fbs`-файлах:
+1. **Schema definition** in `.fbs` files:
    ```fbs
    table Person {
        name: string;
        age: int;
    }
    ```
-2. Данные записываются в "плоский" (потому что все данные укладываются в одну непрерывную последовательность байтов —
-   как длинная лента, где всё идет подряд) буфер с таблицей указателей (offsets). Нет тегов перед каждым значением —
-   вместо этого есть таблица в начале, которая указывает, где что лежит.
+2. Data is written into a "flat" buffer (all data is stored in one continuous sequence of bytes—like a long tape where everything follows in order) along with a table of pointers (offsets). There are no tags before each value; instead, a table at the beginning indicates where each value is located.
     ```text
     [04 00 00 00] [08 00] [0C 00] [05 00 00 00] [50 61 77 65 6C] [1C 00 00 00]
-     служебные байты   таблица   длина строки   строка "Pawel"   возраст
+     header bytes      table      string length    "Pawel" string   age
     ```
-   Здесь:
-    - Данные:
-        - Строка "Pawel":
-            - Длина строки: 5 байтов (для "Pawel"), записывается как 4 байта (int): 05 00 00 00.
-            - Символы: байты для "P", "a", "w", "e", "l" в UTF-8: 50 61 77 65 6C.
-        - Число 28 (int): занимает 4 байта, в hex это 1C 00 00 00 (28 в десятичной системе).
-    - Таблица с указателями (расстояние в байтах от начала таблицы до данных):
-        - 08 00 — отступ на 8 байтов от начала таблицы до строки "Pawel".
-        - 0C 00 — отступ на 12 байтов до возраста.
-    - В начале буфера — служебные байты, указывающие на начало таблицы (например, её позицию):
-        - 04 00 00 00 — смещение до таблицы.
+   Here:
+    - Data:
+        - The string "Pawel":
+            - String length: 5 bytes (for "Pawel"), recorded as a 4-byte integer: `05 00 00 00`.
+            - Characters: bytes for "P", "a", "w", "e", "l" in UTF-8: `50 61 77 65 6C`.
+        - The number 28 (int): occupies 4 bytes, in hex this is `1C 00 00 00` (28 in decimal).
+    - Pointer table (offsets in bytes from the start of the table to the data):
+        - `08 00` — an offset of 8 bytes from the start of the table to the string "Pawel".
+        - `0C 00` — an offset of 12 bytes to the age.
+    - At the beginning of the buffer, header bytes indicate the start of the table (for example, its position):
+        - `04 00 00 00` — offset to the table.
 
-3. Данные уже лежат в памяти в готовом виде (zero-copy), и их можно читать без парсинга, просто прыгая по указателям.
+3. The data is already in memory in a ready-to-use format (zero-copy), allowing direct reading by following pointers without the need for full parsing.
 
 ---
 
-### Преимущества и недостатки
+### Advantages and Disadvantages
 
 #### Protobuf
 
-**Преимущества**:
+**Advantages**:
 
-1. Зрелая экосистема, множество инструментов и библиотек (нативная поддержка gRPC).
-2. Широкая поддержка языков (C++, Python, Java и др.), удобна для проектов, где задействовано несколько языков.
-3. Лёгкая эволюция схемы: можно добавлять новые поля с новыми тегами, а старый код их игнорирует.
-4. Компактный бинарный формат, особенно эффективен по сравнению с XML/JSON.
+1. A mature ecosystem with numerous tools and libraries (native gRPC support).
+2. Wide language support (C++, Python, Java, etc.), making it suitable for projects that involve multiple languages.
+3. Easy schema evolution: new fields can be added with new tags while older code ignores them.
+4. Compact binary format, especially efficient compared to XML/JSON.
 
-**Недостатки**:
+**Disadvantages**:
 
-1. Необходима стадия компиляции `.proto`-файлов в код.
-2. Для доступа к полям нужно распарсить всё сообщение.
-3. Хотя экономия памяти лучше, чем у текстовых форматов, FlatBuffers в ряде сценариев ещё более эффективен.
+1. Requires a compilation step for `.proto` files into code.
+2. Accessing fields necessitates parsing the entire message.
+3. While memory savings are better than text formats, FlatBuffers can be even more efficient in certain scenarios.
 
 #### FlatBuffers
 
-**Преимущества**:
+**Advantages**:
 
-1. Zero-copy десериализация: прямой доступ к нужному полю из буфера без полного парсинга.
-2. Эффективная работа с памятью (особенно в условиях ограниченных ресурсов: мобильные устройства, игры).
-3. Высокая скорость чтения данных (особенно при частом обращении к элементам).
-4. Поддержка простого JSON-формата для отладки (генератор `flatc` умеет преобразовывать и обратно).
-5. Также немаленькая поддержка языков (C++, Python, Rust, TS и др.).
+1. Zero-copy deserialization: direct access to specific fields in the buffer without parsing the entire message.
+2. Efficient memory usage (especially beneficial in resource-constrained environments like mobile devices and games).
+3. High-speed data access (particularly when frequently accessing elements).
+4. Support for a simple JSON format for debugging (the `flatc` compiler can convert between FlatBuffers and JSON).
+5. Wide language support (C++, Python, Rust, TypeScript, etc.).
 
-**Недостатки**:
+**Disadvantages**:
 
-1. Менее зрелая экосистема по сравнению с Protobuf, меньше готовых материалов в сообществе.
-2. Сложность в освоении, особенно если приходится работать напрямую с буфером.
-3. Правила эволюции схемы жёстче: нельзя менять порядок полей, удалять поля, кроме как пометив их `deprecated`.
+1. A less mature ecosystem compared to Protobuf, with fewer community resources.
+2. More complex to learn, especially when working directly with the buffer.
+3. Schema evolution rules are stricter: field order cannot be changed, and fields can only be marked as `deprecated` rather than removed.
 
 ---
 
-### Эволюция схемы
+### Schema Evolution
 
 #### Protobuf
 
-- Добавление новых полей: просто указываются новые номера (например, `email = 3`).
-- Старые поля можно резервировать через `reserved`, чтобы избежать конфликтов.
-- Изменение типов требует осторожности (рекомендуется при несовместимом типе использовать новое поле).
+- **Adding new fields** (simply assign new numbers (e.g., `email = 3`)).
+- **Reserving old fields** (use the `reserved` keyword to avoid conflicts).
+- **Changing types** (requires caution—if the type is incompatible, a new field should be used).
 
 #### FlatBuffers
 
-- Новые поля добавляются строго в конец таблицы, чтобы бинарная структура не нарушалась.
-- Старые поля удалять нельзя, только помечать `deprecated`, чтобы не ломать совместимость.
-- Изменение числовых типов (например, `int` на `long`) требует проверки совместимости, иначе может возникнуть конфликт в
-  бинарной схеме.
+- **Adding new fields** (must be appended strictly at the end of the table to maintain the binary structure).
+- **Removing fields** (cannot be removed; they can only be marked as `deprecated` to preserve compatibility).
+- **Changing numeric types** (changing types (e.g., from `int` to `long`) requires verifying compatibility to avoid conflicts in the binary schema).
 
 ---
 
-### Примеры на Python
+### Python Examples
 
 #### Protobuf
 
-**Шаг 1.** Создадим файл `person.proto`:
+**Step 1.** Create the file `person.proto`:
 
 ```proto
-// Определяем правила сериализации/десериализации. Без этой строки по умолчанию используется proto2, что может привести к неожиданному поведению.
+// Define the serialization/deserialization rules. Without this line, proto2 is used by default, which may lead to unexpected behavior.
 syntax = "proto3";
 
 /*
- * Пространство имен example группирует все сообщения в этом файле.
- * Это предотвращает конфликты имен с другими схемами.
+ * The package 'example' groups all messages in this file.
+ * This prevents naming conflicts with other schemas.
  */
 package example;
 
 message Person {
-    // Поле name хранит имя человека в формате UTF-8.
-    string name = 1; // Значение по умолчанию — "", если не задано.
+    // The field 'name' stores a person's name in UTF-8 format.
+    string name = 1; // Default value is "", if not set.
 
-    // Поле age указывает возраст как 32-битное целое число.
-    int32 age = 2; // Значение по умолчанию — 0, если не задано.
+    // The field 'age' indicates the age as a 32-bit integer.
+    int32 age = 2; // Default value is 0, if not set.
 }
 ```
 
-**Шаг 2.** Скомпилируем `.proto` в Python-код (используя [grpc-tools](https://pypi.org/project/grpcio-tools/)):
+**Step 2.** Compile the `.proto` file into Python code (using [grpc-tools](https://pypi.org/project/grpcio-tools/)):
 
 ```bash
 python -m grpc_tools.protoc -I. --python_out=. person.proto
 ```
 
-Будет сгенерирован файл `person_pb2.py`.
+This will generate the file `person_pb2.py`.
 
-**Шаг 3.** Использование в коде Python:
+**Step 3.** Usage in Python code:
 
 ```python
 import example.person_pb2 as person_pb2
 
-# Создаём объект сообщения Person.
-# person_pb2.Person() — это конструктор класса Person, определенного в person.proto.
-# Создается пустой объект, где поля name и age имеют значения по умолчанию ("" и 0 для proto3).
+# Create a Person message object.
+# person_pb2.Person() is the constructor for the Person class defined in person.proto.
+# It creates an empty object where the fields name and age have default values ("" and 0 for proto3).
 msg = person_pb2.Person()
 msg.name = "Pawel"
 msg.age = 28
 
-# Сериализация в бинарный формат (bytes).
-# SerializeToString() преобразует объект msg в последовательность байтов согласно схеме Protobuf.
+# Serialize to binary format (bytes).
+# SerializeToString() converts the msg object into a byte sequence according to the Protobuf schema.
 serialized_data = msg.SerializeToString()
 
-# ParseFromString заполняет msg2 данными из serialized_data.
-# Метод разбирает байты, распознает теги (1 для name, 2 для age) и присваивает значения полям msg2.
+# ParseFromString fills msg2 with data from serialized_data.
+# The method parses the bytes, recognizes the tags (1 for name, 2 for age), and assigns values to msg2's fields.
 msg2 = person_pb2.Person()
 msg2.ParseFromString(serialized_data)
 
@@ -283,10 +274,10 @@ print("Age:", msg2.age)
 
 #### FlatBuffers
 
-**Шаг 1.** Определим схему в файле `person.fbs`:
+**Step 1.** Define the schema in the file `person.fbs`:
 
 ```fbs
-// Определяем пространство имен (namespace) для сгенерированного кода, чтобы избежать конфликтов имен, особенно если у много схем. Все объекты из этой схемы будут помещены в модуль Example (например, Example/Person.py в Python).
+// Define the namespace for the generated code to avoid naming conflicts, especially if you have multiple schemas. All objects from this schema will be placed in the Example module (e.g., Example/Person.py in Python).
 namespace Example;
 
 table Person {
@@ -295,72 +286,70 @@ table Person {
 }
 
 /* 
-    Указываем, что Person — корневой тип данных в буфере. FlatBuffers требует знать, какой объект является "точкой входа" в буфер. Это нужно для десериализации — чтобы GetRootAsPerson знал, с чего начинать.
-    При десериализации буфера (например, Person.GetRootAsPerson(buf, 0)) FlatBuffers будет ожидать, что буфер содержит объект Person.
+    Specify that Person is the root type in the buffer. FlatBuffers requires knowing which object is the "entry point" in the buffer. This is needed for deserialization—so that GetRootAsPerson knows where to start.
 */
 root_type Person;
 ```
 
-**Шаг 2.** Скомпилируем схему в Python-код (используя [flatc](https://github.com/google/flatbuffers)):
+**Step 2.** Compile the schema into Python code (using [flatc](https://github.com/google/flatbuffers)):
 
 ```bash
 flatc --python person.fbs
 ```
 
-Будут сгенерированы файлы, например `Person.py` и директория `Example` (зависит от вашей версии `flatc`).
+Files will be generated, such as `Person.py` and the directory `Example` (depending on your version of `flatc`).
 
-**Шаг 3.** Использование в Python-коде:
+**Step 3.** Usage in Python code:
 
 ```python
 import flatbuffers
-import Example.Person as Person  # Импортируем сгенерированный модуль.
+import Example.Person as Person  # Import the generated module.
 
-# Сериализация.
-# Создаем объект Builder — это основной инструмент для построения буфера FlatBuffers.
-# initialSize=1024 задает начальный размер буфера в байтах (1024 байта), чтобы избежать частого перераспределения памяти.
+# Serialization.
+# Create a Builder object — the primary tool for constructing a FlatBuffers buffer.
+# initialSize=1024 sets the initial buffer size in bytes (1024 bytes) to avoid frequent memory reallocations.
 builder = flatbuffers.Builder(initialSize=1024)
 
-# Создаем строковый оффсет (указатель) для поля "name".
-# Метод CreateString записывает строку "Pawel" в буфер (длина + байты UTF-8) и возвращает смещение (offset),
-# указывающее, где эта строка находится в буфере.
+# Create a string offset (pointer) for the "name" field.
+# The CreateString method writes the string "Pawel" into the buffer (including its length and UTF-8 bytes) and returns an offset indicating its location in the buffer.
 name_offset = builder.CreateString("Pawel")
 
-# Начинаем построение объекта Person в буфере.
-# PersonStart подготавливает таблицу для объекта Person, выделяя место для указателей на поля (name и age).
+# Begin constructing the Person object in the buffer.
+# PersonStart prepares a table for the Person object, allocating space for pointers to fields (name and age).
 Person.PersonStart(builder)
 
-# Добавляем поле name в таблицу Person.
-# PersonAddName принимает смещение строки (name_offset), которое мы создали ранее, и записывает его в таблицу.
+# Add the name field to the Person table.
+# PersonAddName takes the string offset (name_offset) that was created earlier and writes it into the table.
 Person.PersonAddName(builder, name_offset)
 
-# Добавляем поле age в таблицу Person.
-# PersonAddAge записывает число 28 напрямую (int занимает 4 байта), без создания отдельного оффсета, так как это примитивный тип.
+# Add the age field to the Person table.
+# PersonAddAge writes the number 28 directly (an int occupies 4 bytes) without creating a separate offset, as it is a primitive type.
 Person.PersonAddAge(builder, 28)
 
-# Завершаем построение объекта Person.
-# PersonEnd фиксирует таблицу, возвращая смещение (offset) на начало этой таблицы в буфере.
+# Finish constructing the Person object.
+# PersonEnd finalizes the table, returning an offset to the beginning of this table in the buffer.
 person_obj = Person.PersonEnd(builder)
 
-# Завершаем построение всего буфера.
-# Finish сообщает Builder, что person_obj — это корневой объект, и добавляет служебные байты в начало буфера (например, указатель на таблицу).
+# Complete the entire buffer.
+# Finish tells the Builder that person_obj is the root object and adds header bytes at the beginning of the buffer (e.g., a pointer to the table).
 builder.Finish(person_obj)
 
-# Получаем итоговый бинарный буфер.
-# Output возвращает все данные, собранные в Builder, в виде байтовой строки (bytes), готовой для сохранения или передачи.
+# Obtain the final binary buffer.
+# Output returns all data assembled in the Builder as a byte string (bytes), ready for saving or transmission.
 buf = builder.Output()
 
-# Дecериализация.
-# GetRootAsPerson — это статический метод, который интерпретирует буфер как объект Person.
-# Первый аргумент — буфер (buf), второй — смещение (0), указывающее, с какого байта начинать чтение (обычно 0 для корневого объекта).
+# Deserialization.
+# GetRootAsPerson is a static method that interprets the buffer as a Person object.
+# The first argument is the buffer (buf) and the second is the offset (0) indicating where to start reading (usually 0 for the root object).
 person_msg = Person.Person.GetRootAsPerson(buf, 0)
 
-# Извлекаем поле name из десериализованного объекта.
-# Name() возвращает строку в виде байтов (bytes), так как FlatBuffers хранит строки в UTF-8.
-# decode('utf-8') преобразует байты в строку Python, что важно для не-ASCII символов (хотя "Pawel" — ASCII, это хорошая практика).
+# Extract the name field from the deserialized object.
+# Name() returns the string as bytes since FlatBuffers stores strings in UTF-8.
+# decode('utf-8') converts the bytes into a Python string, which is good practice even if "Pawel" is ASCII.
 name = person_msg.Name().decode('utf-8')  
 
-# Извлекаем поле age из десериализованного объекта.
-# Age() возвращает значение int напрямую, так как это примитивный тип, хранимый в буфере в готовом виде.
+# Extract the age field from the deserialized object.
+# Age() returns the int value directly, as it is a primitive type stored in the buffer in its ready-to-use form.
 age = person_msg.Age()
 
 print("Name:", name)
@@ -369,57 +358,48 @@ print("Age:", age)
 
 ---
 
-### Производительность
+### Performance
 
 - **Protobuf**:
-    - Обычно показывает небольшие размеры сообщений, так как использует varint для целых чисел.
-    - Требует парсинга, который создаёт дополнительные структуры в памяти, что может быть не так критично для
-      микросервисов, но заметно в ресурсозатратных приложениях.
-    - Имеет хорошую производительность при работе с gRPC.
+    - Typically produces small message sizes due to using varint encoding for integers.
+    - Requires parsing, which creates additional structures in memory. This might not be critical for microservices but can be noticeable in resource-intensive applications.
+    - Performs well when used with gRPC.
 
 - **FlatBuffers**:
-    - Zero-copy десериализация делает его чрезвычайно быстрым при частом доступе к данным.
-    - Сокращение объёмов памяти за счёт отсутствия дополнительного копирования данных.
-    - В больших игровых движках и мобильных приложениях этот подход даёт значительные преимущества в скорости и
-      потреблении памяти.
+    - Zero-copy deserialization makes it extremely fast for frequent data access.
+    - Reduces memory usage by eliminating extra data copying.
+    - In large game engines and mobile applications, this approach offers significant speed and memory consumption advantages.
 
 ---
 
-### Дополнительные аспекты
+### Additional Aspects
 
-1. **Безопасность**:
-    - Protobuf игнорирует неизвестные поля, что может быть как плюсом (не ломает старый код), так и минусом (сложнее
-      отлавливать лишние/вредоносные данные).
-    - FlatBuffers работает с указателями (смещениями) внутри буфера: важно следить, чтобы данные не были повреждены,
-      иначе возможны «выходы за границы» при чтении.
+1. **Security**:
+    - Protobuf ignores unknown fields, which can be beneficial (does not break older code) but may make it harder to detect extraneous or malicious data.
+    - FlatBuffers works with pointers (offsets) within the buffer; it is crucial to ensure the data is not corrupted to prevent out-of-bound access during reading.
 
-2. **Читаемость**:
-    - Оба формата по умолчанию бинарные и нечитабельны для человека.
-    - Существуют инструменты для преобразования в JSON-подобный вид (для отладки и тестов).
+2. **Readability**:
+    - Both formats are binary by default and not human-readable.
+    - Tools exist to convert them to a JSON-like format for debugging and testing.
 
 3. **RPC**:
-    - Protobuf имеет встроенную поддержку в gRPC (определения сервисов и методов в `.proto`).
-    - FlatBuffers не привязан к какому-то одному RPC-фреймворку; возможно использовать сторонние решения или собственный
-      фрэймворк.
+    - Protobuf has built-in support in gRPC (service and method definitions in `.proto` files).
+    - FlatBuffers is not tied to any specific RPC framework; third-party solutions or custom frameworks can be used.
 
-4. **Специальные типы**:
-    - Protobuf имеет well-known types (например, `Timestamp`, `Duration` и др.).
-    - В FlatBuffers придётся объявлять собственные типы для дат, времени и т.п.
+4. **Special Types**:
+    - Protobuf includes well-known types (e.g., `Timestamp`, `Duration`, etc.).
+    - In FlatBuffers, you may need to define custom types for dates, time, and similar data.
 
 ---
 
-### Вместо вывода
+### In Summary
 
 - **Protobuf**:
-    - Оптимален для микросервисов, сетевых RPC, проектов, где важна интеграция с gRPC и широкая языковая поддержка.
-    - Более «классический» и легко осваиваемый подход к сериализации.
+    - Ideal for microservices, network RPC, and projects where gRPC integration and broad language support are important.
+    - Offers a more "classic" and easy-to-learn approach to serialization.
 
 - **FlatBuffers**:
-    - Хорош в случаях, когда каждый байт памяти важен (игры, VR/AR, мобильные приложения) и когда требуется очень
-      быстрый доступ к любому полю без распаковки всего сообщения.
-    - Пригодится в задачах, где нужно сериализовать/десериализовать очень большие объёмы данных с минимальными
-      оверхедами.
+    - Particularly useful when every byte of memory is critical (such as in games, VR/AR, mobile applications) and when extremely fast access to any field without unpacking the entire message is required.
+    - Suitable for tasks that involve serializing/deserializing very large volumes of data with minimal overhead.
 
-Таким образом, выбор зависит от требований к производительности, ограничений по памяти, интеграции с существующими
-инструментами и потребностей эволюции схем. Оба формата хорошо себя зарекомендовали, но имеют разные сильные и слабые
-стороны.
+Thus, the choice between Protobuf and FlatBuffers depends on performance requirements, memory constraints, integration with existing tools, and schema evolution needs. Both formats have proven effective, though they offer different strengths and trade-offs.
