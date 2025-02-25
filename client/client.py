@@ -11,7 +11,7 @@ from serializers import serialize_json, serialize_protobuf, serialize_flatbuffer
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(module)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(module)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler("/app/results/logs/client.log"),
         logging.StreamHandler()
@@ -26,7 +26,7 @@ def check_metrics(metrics):
         raise ValueError("Metrics must be a non-empty list.")
     for m in metrics:
         if not all(k in m for k in ["server_id", "cpu_usage", "memory_usage", "disk_usage", "timestamp"]):
-            logger.error(f"Invalid metric format: {m}")
+            logger.error("Invalid metric format: %s", m)
             raise ValueError("Metric missing required fields.")
     logger.info("Metrics validated successfully.")
     return
@@ -34,38 +34,39 @@ def check_metrics(metrics):
 
 def run():
     server_host = os.getenv("SERVER_HOST")
-    logger.info(f"Starting client, connecting to {server_host}:50051")
+    logger.info("Starting client, connecting to %s:50051", server_host)
 
-    # Генерация и проверка данных.
+    # Data generation and validation.
     try:
         metrics = generate_metrics(1000)
         check_metrics(metrics)
     except Exception as e:
-        logger.error(f"Failed to generate metrics: {e}")
+        logger.error("Failed to generate metrics: %s", e)
         return
 
-    # Сериализация.
+    # Serialization
     try:
         start = time.time()
         json_data = serialize_json(metrics)
         json_ser_time = time.time() - start
-        logger.info(f"JSON serialization took {json_ser_time:.4f}s")
+        logger.info("JSON serialization took %.4f seconds.", json_ser_time)
 
         start = time.time()
         proto_data = serialize_protobuf(metrics)
         proto_ser_time = time.time() - start
-        logger.info(f"Protobuf serialization took {proto_ser_time:.4f}s")
+        logger.info("Protobuf serialization took %.4f seconds.", proto_ser_time)
 
         start = time.time()
         flat_data = serialize_flatbuffers(metrics)
         flat_ser_time = time.time() - start
-        logger.info(f"FlatBuffers serialization took {flat_ser_time:.4f}s")
+        logger.info("FlatBuffers serialization took %.4f seconds.", flat_ser_time)
 
         serialize_times = {
             "json_ser_time": json_ser_time,
             "proto_ser_time": proto_ser_time,
             "flat_ser_time": flat_ser_time
         }
+
         base_path = os.getenv("RESULTS_PATH")
         os.makedirs(base_path, exist_ok=True)
         try:
@@ -73,28 +74,29 @@ def run():
                 json.dump(serialize_times, f_serialize_times)
             logger.info("Serialization times saved to serialize_times.json")
         except Exception as e:
-            logger.error(f"Failed to save serialization times: {e}")
-
+            logger.error("Failed to save serialization times: %s", e)
     except Exception as e:
-        logger.error(f"Serialization failed: {e}")
+        logger.error("Serialization failed: %s", e)
         return
 
-    # Проверка доступности сервера и отправка.
+    # Server availability check and data transmission.
     channel = grpc.insecure_channel(f"{server_host}:50051")
     try:
-        grpc.channel_ready_future(channel).result(timeout=10)  # grpc.channel_ready_future возвращает объект Future, который завершается, когда канал готов. result(timeout=10) блокирует выполнение максимум на 10 секунд, ожидая готовности сервера.
-        logger.info("gRPC server is ready.")  # Если сервер ответил в течение 10 секунд.
-    except grpc.FutureTimeoutError:  # Если сервер не ответил за 10 секунд, возникает исключение FutureTimeoutError.
+        grpc.channel_ready_future(channel).result(
+            timeout=10)  # `grpc.channel_ready_future` returns a Future object that completes when the channel is ready. `result(timeout=10)` blocks execution for up to 10 seconds, waiting for the server to be ready.
+        logger.info("gRPC server is ready.")  # If the server responds within 10 seconds.
+    except grpc.FutureTimeoutError:  # If the server does not respond within 10 seconds, a FutureTimeoutError exception is raised.
         logger.error("gRPC server is not responding.")
         return
 
     with channel:
-        stub = MetricsServiceStub(channel)  # Создаем объект stub — клиентский интерфейс для вызова RPC-методов сервиса MetricsService. MetricsServiceStub сгенерирован из metrics.proto и привязан к каналу.
+        stub = MetricsServiceStub(
+            channel)  # Create a stub object — a client interface for calling RPC methods of the MetricsService. MetricsServiceStub is generated from metrics.proto and bound to the channel.
         try:
-            response = stub.SendMetrics(proto_data)  # Возвращается объект MetricsResponse с полем message.
-            logger.info(f"Server response: {response.message}")
-        except grpc.RpcError as e:  # Обрабатываем возможные ошибки gRPC (например, сервер не отвечает или вернул ошибку).
-            logger.error(f"gRPC call failed: {e}")
+            response = stub.SendMetrics(proto_data)  # Returns a MetricsResponse object with a message field.
+            logger.info("Server response: %s", response.message)
+        except grpc.RpcError as e:  # Handle possible gRPC errors (e.g., server not responding or returning an error).
+            logger.error("gRPC call failed: %s", e)
             return
 
 

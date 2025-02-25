@@ -1,6 +1,6 @@
 import logging
 import signal
-from concurrent import futures  # Для создания пула потоков, используемого gRPC-сервером.
+from concurrent import futures  # For creating a thread pool used by the gRPC server.
 
 import grpc
 
@@ -11,7 +11,7 @@ from deserialize_perfomance import measure_deserialize_performance
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(module)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(module)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler("/app/results/logs/server.log"),
         logging.StreamHandler()
@@ -19,10 +19,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-server = None  # Глобальная переменная для gRPC-сервера.
+server = None  # Global variable for the gRPC server.
 
 
-# Устанавливаем обработчик сигналов.
+# Set up signal handlers.
 def shutdown(signum, frame):
     global server
     if server:
@@ -31,23 +31,23 @@ def shutdown(signum, frame):
         logger.info("Server stopped.")
 
 
-# Определяем класс MetricsService, наследующийся от MetricsServiceServicer.
-# Этот класс реализует методы, описанные в сервисе MetricsService в metrics.proto.
+# Define the MetricsService class, inheriting from MetricsServiceServicer.
+# This class implements the methods defined in the MetricsService service in metrics.proto.
 class MetricsService(MetricsServiceServicer):
 
-    # Реализуем метод SendMetrics, объявленный как rpc SendMetrics в proto-файле.
-    # request — это объект MetricsRequest с массивом метрик, context — контекст gRPC для управления вызовом.
+    # Implement the SendMetrics method, declared as rpc SendMetrics in the proto file.
+    # request — a MetricsRequest object containing an array of metrics, context — the gRPC context for managing the call.
     def SendMetrics(self, request, context):
-        logger.info(f"Received {len(request.metrics)} metrics.")
+        logger.info("Received %d metrics.", len(request.metrics))
         try:
             save_metrics(request.metrics)
             measure_deserialize_performance(request.metrics)
             logger.info("Metrics processed successfully.")
             return MetricsResponse(message="Data received and processed.")
         except Exception as e:
-            logger.error(f"Failed to process metrics: {e}")
-            context.set_code(grpc.StatusCode.INTERNAL)  # Устанавливаем код ошибки gRPC как INTERNAL (500 в HTTP), сигнализируя о внутренней проблеме.
-            context.set_details(str(e))  # Устанавливаем детали ошибки для клиента (строка с описанием исключения).
+            logger.error("Failed to process metrics: %s", e)
+            context.set_code(grpc.StatusCode.INTERNAL)  # Set the gRPC error code as INTERNAL (equivalent to HTTP 500), indicating an internal server issue.
+            context.set_details(str(e))  # Provide error details for the client (a string containing the exception description).
             return MetricsResponse(message="Error processing data.")
 
 
@@ -55,26 +55,26 @@ def serve():
     global server
     logger.info("Starting gRPC server on port 50051.")
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))  # Создаем gRPC-сервер с пулом потоков (максимум 10 потоков для параллельной обработки запросов). Иначе None, и сервер будет работать в однопоточном режиме.
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))  # Create a gRPC server with a thread pool (maximum 10 threads for parallel request handling). If None, the server runs in single-threaded mode.
 
-    add_MetricsServiceServicer_to_server(MetricsService(), server)  # Регистрируем реализацию сервиса MetricsService на сервере.
+    add_MetricsServiceServicer_to_server(MetricsService(), server)  # Register the MetricsService implementation on the server.
 
-    server.add_insecure_port('[::]:50051')  # Привязываем сервер к порту 50051, используя небезопасное соединение (без TLS/SSL) (удобно для локальной разработки, но небезопасно для продакшена), '[::]' означает, что сервер слушает все доступные интерфейсы.
-    # server.add_secure_port('[::]:50051', grpc.ssl_server_credentials([...])) # Безопасное соединение (TLS/SSL).
-    # server.add_insecure_port('[::]:50052')  # Любой другой свободный порт.
-    # server.add_insecure_port('127.0.0.1:50051')  # Только локальные соединения.
-    # server.add_insecure_port('unix:/tmp/grpc.sock')  # Юникс-сокеты (альтернатива TCP-соединениям).
+    server.add_insecure_port("[::]:50051")  # Bind the server to port 50051 using an insecure connection (no TLS/SSL). This is convenient for local development but not secure for production. "[::]" means the server listens on all available interfaces.
+    # server.add_secure_port("[::]:50051", grpc.ssl_server_credentials([...]))  # Secure connection (TLS/SSL).
+    # server.add_insecure_port("[::]:50052")  # Any other available port.
+    # server.add_insecure_port("127.0.0.1:50051")  # Local connections only.
+    # server.add_insecure_port("unix:/tmp/grpc.sock")  # Unix sockets (alternative to TCP connections).
 
-    # Устанавливаем обработчики сигналов для корректного завершения.
+    # Set signal handlers for graceful shutdown.
     signal.signal(signal.SIGINT, shutdown)  # Ctrl+C.
-    signal.signal(signal.SIGTERM, shutdown)  # Завершение процесса.
+    signal.signal(signal.SIGTERM, shutdown)  # Process termination.
 
-    server.start()  # Запускаем сервер для приема запросов.
+    server.start()  # Start the server to accept requests.
 
     logger.info("Server started. Press Ctrl+C to stop.")
 
-    server.wait_for_termination()  # Блокируем выполнение программы, ожидая завершения работы gRPC-сервера (чтобы сервер продолжал работать до прерывания (например, Ctrl+C). Без него сервер может завершиться сразу после старта.
-    # server.wait_for_termination(timeout=60)  # Если сервер не остановился, выполнение кода продолжится после 60 секунд ожидания. Если нужно периодически проверять состояние сервера и в сценариях, где сервер не должен работать бесконечно.
+    server.wait_for_termination()  # Block program execution, waiting for the gRPC server to terminate (ensures the server keeps running until interrupted, e.g., with Ctrl+C). Without this, the server might exit immediately after starting.
+    # server.wait_for_termination(timeout=60)  # If the server does not stop, execution will continue after 60 seconds of waiting. Useful for periodic server status checks or scenarios where the server should not run indefinitely.
 
 
 if __name__ == "__main__":

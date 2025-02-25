@@ -5,10 +5,10 @@ WORKDIR /app
 RUN --mount=type=bind,source=requirements.txt,target=requirements.txt \
     pip install --no-cache-dir -r requirements.txt
 
-# Устанавливаем flatc (компилятор FlatBuffers).
+# Install flatc (the FlatBuffers compiler).
 RUN apt-get update && apt-get install -y flatbuffers-compiler tree
 
-# Копируем схемы и компилируем их.
+# Copy schema files and compile them.
 RUN mkdir ./proto/ ./flatbuffers_schema/
 COPY proto/ ./proto/
 COPY flatbuffers_schema/ ./flatbuffers_schema/

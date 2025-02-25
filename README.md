@@ -225,16 +225,16 @@ Protobuf focuses on the efficient serialization of structured data for network t
 syntax = "proto3";
 
 /*
- * The package 'example' groups all messages in this file.
+ * The package "example" groups all messages in this file.
  * This prevents naming conflicts with other schemas.
  */
 package example;
 
 message Person {
-    // The field 'name' stores a person's name in UTF-8 format.
+    // The field "name" stores a person's name in UTF-8 format.
     string name = 1; // Default value is "", if not set.
 
-    // The field 'age' indicates the age as a 32-bit integer.
+    // The field "age" indicates the age as a 32-bit integer.
     int32 age = 2; // Default value is 0, if not set.
 }
 ```
@@ -345,8 +345,8 @@ person_msg = Person.Person.GetRootAsPerson(buf, 0)
 
 # Extract the name field from the deserialized object.
 # Name() returns the string as bytes since FlatBuffers stores strings in UTF-8.
-# decode('utf-8') converts the bytes into a Python string, which is good practice even if "Pawel" is ASCII.
-name = person_msg.Name().decode('utf-8')  
+# decode("utf-8") converts the bytes into a Python string, which is good practice even if "Pawel" is ASCII.
+name = person_msg.Name().decode("utf-8")  
 
 # Extract the age field from the deserialized object.
 # Age() returns the int value directly, as it is a primitive type stored in the buffer in its ready-to-use form.

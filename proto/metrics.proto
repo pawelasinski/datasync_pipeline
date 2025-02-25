@@ -1,30 +1,61 @@
-syntax = "proto3";  // В proto3 все поля опциональны, и если их не указать, они принимают значения по умолчанию.
+syntax = "proto3";  // In proto3, all fields are optional, and if not specified, they take default values.
 
 message ServerMetrics {
-  string server_id = 1;  // UTF-8-cтрока.
-  float cpu_usage = 2;  // 32-битное число с плавающей точкой.
+  string server_id = 1;  // UTF-8 string.
+  float cpu_usage = 2;  // 32-bit floating-point number.
   float memory_usage = 3;
   float disk_usage = 4;
   string timestamp = 5;
 }
 
-message MetricsRequest {  // Запрос, содержащий массив метрик.
-  repeated ServerMetrics metrics = 1;  // Ключевое слово repeated указывает, что поле metrics — это список (массив) элементов типа ServerMetrics.
+message MetricsRequest {  // Request containing an array of metrics.
+  repeated ServerMetrics metrics = 1;  // The `repeated` keyword indicates that the metrics field is a list (array) of ServerMetrics elements.
 }
 
-message MetricsResponse {  // Ответ от сервера.
+message MetricsResponse {  // Server response.
   string message = 1;
 }
 
-service MetricsService {  // Определяем gRPC-сервис MetricsService с одним методом (интерфейс для отправки метрик от клиента к серверу через gRPC).
-  rpc SendMetrics (MetricsRequest) returns (MetricsResponse) {}
+service MetricsService {  // Defines a gRPC service MetricsService with a single method (an interface for sending metrics from a client to a server via gRPC).
+  rpc SendMetrics (MetricsRequest) returns (MetricsResponse) {};
 }
 /*
- * service — ключевое слово для описания gRPC-сервиса.
+ * service — keyword for defining a gRPC service.
  * rpc SendMetrics (MetricsRequest) returns (MetricsResponse) {}:
- * + rpc — удалённый вызов процедуры (remote procedure call).
- * + SendMetrics — имя метода.
- * + (MetricsRequest) — входной параметр (объект MetricsRequest).
- * + returns (MetricsResponse) — возвращаемый результат (объект MetricsResponse).
- * + {} — пустое тело (без опций, таких как потоковая передача).
+ * + rpc — remote procedure call.
+ * + SendMetrics — method name.
+ * + (MetricsRequest) — input parameter (MetricsRequest object).
+ * + returns (MetricsResponse) — return result (MetricsResponse object).
+ * + {} — empty body (without options). It can be skipped.
+ *
+ *
+ * rpc SendMetrics (stream MetricsRequest) returns (MetricsResponse) — one-way stream from client to server (Client Streaming). Allows the client to send multiple messages before the server responds.
+ * rpc SendMetrics (MetricsRequest) returns (stream MetricsResponse) — one-way stream from server to client (Server Streaming). Allows the server to send multiple messages in response to a single client request.
+ * rpc SendMetrics (stream MetricsRequest) returns (stream MetricsResponse) — bidirectional stream (Bidirectional Streaming). Both participants (client and server) can send data in a streaming mode.
+ *
+ *
+ * import "google/api/annotations.proto";
+ *
+ * rpc SendMetrics (MetricsRequest) returns (MetricsResponse) {
+ *   option (google.api.http) = {
+ *     post: "/v1/metrics"
+ *     body: "*"
+ *   };
+ * } — in gRPC, REST API-compatible options can be added using Google API HTTP. This is useful if we want the gRPC method to be callable via a standard HTTP request.
+ * post: "/v1/metrics" — specifies the URL for sending the HTTP request.
+ * body: "*" — indicates that the request body (MetricsRequest) will be passed as JSON in the HTTP request body.
+ *
+ *
+ * import "google/protobuf/duration.proto";
+ *
+ * service MetricsService {
+ *   rpc SendMetrics (MetricsRequest) returns (MetricsResponse) {
+ *     option (grpc.timeout) = {
+ *       timeout: { seconds: 5 }
+ *     };
+ *   }
+ * } — here, option (grpc.timeout) specifies that the SendMetrics call should complete within 5 seconds if no response is received.
+ * However, in most cases, the timeout is set on the client side:
+ * response = stub.SendMetrics(request, timeout=5)  # 5-second timeout
+ *
  */

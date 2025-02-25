@@ -1,68 +1,70 @@
 namespace flatbuffers_schema;
 
 table ServerMetrics {
-  server_id: string;  // UTF-8-cтрока, хранится как длина (4 байта) + байты данных.
-  cpu_usage: float;  // 32-битное число с плавающей точкой, 4 байта.
+  server_id: string;  // UTF-8 string, stored as length (4 bytes) + bytes of data.
+  cpu_usage: float;  // 32-bit floating-point number, 4 bytes.
   memory_usage: float;
   disk_usage: float;
   timestamp: string;
 }
 
 /*
-    Особенности table:
-    * Поля опциональны: если поле не задано, оно не сериализуется в буфер.
-    * Использует таблицу смещений (offsets): каждое поле в буфере представлено указателем (offset), который либо указывает на данные, либо отсутствует (нулевое смещение).
-    * Поддерживает сложные типы: строки, массивы, вложенные таблицы.
+    Features of "table":
+    * Fields are optional (if a field is not set, it is not serialized into the buffer).
+    * Uses an offset table (each field in the buffer is represented by a pointer (offset) that either points to the data or is null (zero offset)).
+    * Supports complex types: strings, arrays, nested tables.
 
     table Person {
       name: string;
       age: int;
     }
 
-    Если сериализовать объект только с name="Pawel", не указав age, буфер будет содержать только данные для name, а age просто пропустится:
+    If an object is serialized with only name="Pawel" and without age, the buffer will contain only the data for name, and age will be skipped:
 
     [04 00 00 00] [08 00] [00 00] [05 00 00 00] [50 61 77 65 6C]
-     служебные     таблица (name offset, age=0)  "Pawel"
+     metadata      table (name offset, age=0)   "Pawel"
 
-    Преимущества:
-    * Гибкость: можно добавлять или пропускать поля без изменения структуры буфера.
-    * Экономия места: ненужные поля не занимают память.
-    Недостатки:
-    * Дополнительный оверхед из-за таблицы offsets (2-4 байта на поле).
+    Advantages:
+    * Flexibility (fields can be added or skipped without changing the buffer structure).
+    * Space efficiency (unused fields do not take up memory).
+
+    Disadvantages:
+    * Additional overhead due to the offsets table (2-4 bytes per field).
 
     ---
 
-    Особенности struct:
-    * Все поля обязательны: каждое поле должно быть задано при сериализации.
-    * Фиксированный размер: данные записываются подряд без offsets, что делает буфер компактнее.
-    * Поддерживает только примитивные типы (int, float, bool и т.д.), но не строки или массивы.
+    Features of "struct":
+    * All fields are required (every field must be set during serialization).
+    * Fixed size (data is written sequentially without offsets, making the buffer more compact).
+    * Supports only primitive types (int, float, bool, etc.), but not strings or arrays.
 
     struct Point {
       x: float;
       y: float;
     }
 
-    Для объекта Point {x: 1.0, y: 2.0} буфер будет фиксированным:
+    For an object Point {x: 1.0, y: 2.0}, the buffer will have a fixed structure:
 
     [00 00 80 3F] [00 00 00 40]
      x=1.0         y=2.0
 
-    Здесь нет offsets, только 8 байтов данных (4 на float).
+    There are no offsets, just 8 bytes of pure data (4 bytes per float).
 
-    Преимущества:
-    * Компактность: нет таблиц, только чистые данные.
-    * Скорость: прямой доступ без указателей.
-    Недостатки:
-    * Cтроки не поддерживаются в struct.
-    * Жесткость: нельзя пропустить поле или изменить структуру без пересоздания буфера.
+    Advantages:
+    * Compactness (no tables, only raw data).
+    * Speed (direct access without pointers).
+
+    Disadvantages:
+    * Strings are not supported in struct.
+    * Rigid structure (fields cannot be skipped or modified without recreating the buffer).
 */
 
-table MetricsRequest {  // Определяем таблицу MetricsRequest, которая содержит массив записей ServerMetrics.
-  metrics: [ServerMetrics];  // Вектор (массив) объектов типа ServerMetrics. В буфере это будет закодировано как длина массива (4 байта) + смещения на каждый элемент. Массив может быть пустым, и это тоже валидный буфер.
+table MetricsRequest {  // Defines the MetricsRequest table, which contains an array of ServerMetrics records.
+  metrics: [ServerMetrics];  // A vector (array) of ServerMetrics objects. In the buffer, this will be encoded as the array length (4 bytes) + offsets to each element. The array can be empty, which is also a valid buffer.
 }
 
 root_type MetricsRequest;
 /*
-    Корневой тип данных в буфере (FlatBuffers требует явно указать корневой тип, чтобы знать, с чего начинать десериализацию).
-    Здесь это означает, что буфер будет интерпретироваться как объект MetricsRequest и будет обеспечивать точку входа для чтения данных (например, через MetricsRequest.GetRootAsMetricsRequest).
+    The root type of the buffer (FlatBuffers requires explicitly specifying the root type to know where to start deserialization).
+    Here, it means that the buffer will be interpreted as a MetricsRequest object, providing the entry point for reading data (e.g., via FlatMetricsRequest.GetRootAsMetricsRequest).
 */

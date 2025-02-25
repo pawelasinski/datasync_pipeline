@@ -4,7 +4,8 @@ import logging
 
 import flatbuffers
 from metrics_pb2 import MetricsRequest
-from flatbuffers_schema.MetricsRequest import MetricsRequestStart, MetricsRequestAddMetrics, MetricsRequestEnd, MetricsRequestStartMetricsVector
+from flatbuffers_schema.MetricsRequest import MetricsRequestStart, MetricsRequestAddMetrics, MetricsRequestEnd, \
+    MetricsRequestStartMetricsVector
 from flatbuffers_schema.ServerMetrics import ServerMetricsStart, ServerMetricsAddServerId, ServerMetricsAddCpuUsage, \
     ServerMetricsAddMemoryUsage, ServerMetricsAddDiskUsage, ServerMetricsAddTimestamp, ServerMetricsEnd
 
@@ -20,7 +21,7 @@ def save_metrics(metrics):
     try:
         os.makedirs(base_path, exist_ok=True)
     except OSError as e:
-        logger.error(f"Failed to create directory {base_path}: {e}")
+        logger.error("Failed to create directory %s: %s", base_path, e)
         raise
 
     if not metrics:
@@ -33,55 +34,59 @@ def save_metrics(metrics):
     try:
         with open(f"{base_path}/metrics.json", "w") as f_json:
             json.dump(json_data, f_json)
-        logger.info(f"Saved {len(json_data)} metrics to {base_path}/metrics.json")
+        logger.info("Saved %d metrics to %s/metrics.json", len(json_data), base_path)
     except Exception as e:
-        logger.error(f"Failed to save JSON: {e}")
+        logger.error("Failed to save JSON: %s", e)
         raise
 
     try:
         request = MetricsRequest()
         request.metrics.extend(metrics)
         with open(f"{base_path}/metrics.proto.bin", "wb") as f_proto:
-            f_proto.write(request.SerializeToString())  # Сериализация в бинарный формат (bytes) (SerializeToString() преобразует объект msg в последовательность байтов согласно схеме Protobuf).
-        logger.info(f"Saved {len(metrics)} metrics to {base_path}/metrics.proto.bin")
+            f_proto.write(
+                request.SerializeToString())  # Serialize to binary format (bytes). SerializeToString() converts the msg object into a byte sequence according to the Protobuf schema.
+        logger.info("Saved %d metrics to %s/metrics.proto.bin", len(metrics), base_path)
     except Exception as e:
-        logger.error(f"Failed to save Protobuf: {e}")
+        logger.error("Failed to save Protobuf: %s", e)
         raise
 
     try:
-        builder = flatbuffers.Builder(1024)  # Создаем объект Builder — инструмент для построения FlatBuffers-буфера. 1024 — начальный размер буфера в байтах, который будет увеличиваться при необходимости.
+        builder = flatbuffers.Builder(
+            1024)  # Create a Builder object — a tool for constructing a FlatBuffers buffer. 1024 is the initial buffer size in bytes, which will grow if needed.
         metric_offsets = []
         for m in metrics:
-            # Создаем строковый offset для server_id, записывая строку в буфер. CreateString возвращает смещение (offset) на начало строки в буфере.
+            # Create a string offset for server_id by writing the string into the buffer. CreateString returns the offset pointing to the beginning of the string in the buffer.
             server_id = builder.CreateString(m.server_id)
             timestamp = builder.CreateString(m.timestamp)
-            # Начинаем построение объекта ServerMetrics в буфере. ServerMetricsStart подготавливает таблицу для объекта ServerMetrics, выделяя место для указателей на поля.
+            # Start building the ServerMetrics object in the buffer. ServerMetricsStart prepares a table for the ServerMetrics object, allocating space for field pointers.
             ServerMetricsStart(builder)
-            # Добавляем server_id в таблицу ServerMetrics через его offset.
+            # Add server_id to the ServerMetrics table using its offset.
             ServerMetricsAddServerId(builder, server_id)
-            # Добавляем cpu_usage как float напрямую (без offset, так как примитивный тип).
+            # Add cpu_usage as a float directly (without an offset, since it's a primitive type).
             ServerMetricsAddCpuUsage(builder, m.cpu_usage)
             ServerMetricsAddMemoryUsage(builder, m.memory_usage)
             ServerMetricsAddDiskUsage(builder, m.disk_usage)
             ServerMetricsAddTimestamp(builder, timestamp)
-            # Завершаем объект ServerMetrics и получаем его offset в буфере.
+            # Finalize the ServerMetrics object and get its offset in the buffer.
             metric_offsets.append(ServerMetricsEnd(builder))
 
-        MetricsRequestStartMetricsVector(builder, len(metrics))  # Начинаем создание вектора (массива) metrics в MetricsRequest. Указываем количество элементов (len(metrics)), чтобы зарезервировать место.
-        # Добавляем offsets объектов ServerMetrics в вектор в обратном порядке. PrependUOffsetTRelative добавляет смещение в начало вектора (FlatBuffers строит буфер с конца).
+        MetricsRequestStartMetricsVector(
+            builder,
+            len(metrics))  # Start creating the metrics vector (array) in MetricsRequest. Specify the number of elements (len(metrics)) to reserve space.
+        # Add offsets of ServerMetrics objects to the vector in reverse order. PrependUOffsetTRelative adds offsets at the beginning of the vector (FlatBuffers builds the buffer from the end).
         for offset in reversed(metric_offsets):
             builder.PrependUOffsetTRelative(offset)
-        metrics_array = builder.EndVector(len(metrics))  # Завершаем вектор и получаем его offset.
+        metrics_array = builder.EndVector(len(metrics))  # Finalize the vector and get its offset.
 
-        MetricsRequestStart(builder)  # Начинаем построение корневого объекта MetricsRequest.
-        MetricsRequestAddMetrics(builder, metrics_array)  # Добавляем вектор metrics в MetricsRequest через его offset.
-        request = MetricsRequestEnd(builder)  # Завершаем MetricsRequest и получаем его offset.
-        builder.Finish(request)  # Завершаем весь буфер, указывая, что request — корневой объект.
-        flat_data = builder.Output()  # Получаем итоговую байтовую строку (буфер FlatBuffers) для передачи или сохранения.
+        MetricsRequestStart(builder)  # Start building the root MetricsRequest object.
+        MetricsRequestAddMetrics(builder, metrics_array)  # Add the metrics vector to MetricsRequest using its offset.
+        request = MetricsRequestEnd(builder)  # Finalize MetricsRequest and get its offset.
+        builder.Finish(request)  # Finalize the entire buffer, specifying that request is the root object.
+        flat_data = builder.Output()  # Retrieve the final byte string (FlatBuffers buffer) for transmission or storage.
 
         with open(f"{base_path}/metrics.flatbuf", "wb") as f_flat:
             f_flat.write(flat_data)
-        logger.info(f"Saved {len(metrics)} metrics to {base_path}/metrics.flatbuf")
+        logger.info("Saved %d metrics to %s/metrics.flatbuf", len(metrics), base_path)
     except Exception as e:
-        logger.error(f"Failed to save FlatBuffers: {e}")
+        logger.error("Failed to save FlatBuffers: %s", e)
         raise
