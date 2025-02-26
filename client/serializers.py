@@ -1,4 +1,5 @@
 import json
+from typing import Union
 
 from metrics_pb2 import ServerMetrics, MetricsRequest
 import flatbuffers
@@ -8,11 +9,29 @@ from flatbuffers_schema.ServerMetrics import ServerMetricsStart, ServerMetricsAd
     ServerMetricsAddMemoryUsage, ServerMetricsAddDiskUsage, ServerMetricsAddTimestamp, ServerMetricsEnd
 
 
-def serialize_json(metrics):
+def serialize_json(metrics: list[dict[str, Union[str, float]]]) -> str:
+    """Serialize a list of metrics into a JSON string.
+
+    Args:
+        metrics: List of metrics.
+
+    Returns:
+        A JSON-encoded string representing the metrics.
+
+    """
     return json.dumps(metrics)
 
 
-def serialize_protobuf(metrics):
+def serialize_protobuf(metrics: list[dict[str, Union[str, float]]]) -> MetricsRequest:
+    """Serialize a list of metrics into a Protobuf MetricsRequest object.
+
+    Args:
+        metrics: List of metrics.
+
+    Returns:
+        A Protobuf MetricsRequest object containing the serialized metrics.
+
+    """
     request = MetricsRequest()  # Create an empty MetricsRequest object that will contain an array of metrics.
     for m in metrics:
         metric = request.metrics.add()  # Add a new ServerMetrics object to the request.metrics list. `add()` creates a new element and returns it for further filling.
@@ -24,7 +43,16 @@ def serialize_protobuf(metrics):
     return request
 
 
-def serialize_flatbuffers(metrics):
+def serialize_flatbuffers(metrics: list[dict[str, Union[str, float]]]) -> bytes:
+    """Serialize a list of metrics into a FlatBuffers binary buffer.
+
+    Args:
+        metrics: List of metrics.
+
+    Returns:
+        A FlatBuffers-encoded byte string containing the serialized metrics.
+
+    """
     builder = flatbuffers.Builder(
         1024)  # Create a Builder object — a tool for constructing a FlatBuffers buffer. 1024 is the initial buffer size in bytes, which will grow if needed.
     metric_offsets = []

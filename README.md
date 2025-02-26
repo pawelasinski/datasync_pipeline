@@ -27,7 +27,7 @@ This mini-project showcases how to use **Protobuf** and **FlatBuffers** for data
 
 2. **Run the project**:
    ```bash
-   docker compose up --build --no-cache
+   docker compose up --build
    ```
    - The server will start on port `50051`.
    - The client will generate data and send it to the server.
@@ -68,7 +68,7 @@ datasync_pipeline/
 │   ├── Dockerfile                      # Dockerfile for the analysis
 │   └── analyze.py                      # Comparison and graph generation
 ├── results/                         # Folder for results (data files, graphs, and logs; will be mounted as a volume)
-│   ├── logs/                           # Folder for logs (created automatically)
+│   ├── logs/...                        # Folder for logs (created automatically)
 │   └── ...                             # Data files and graphs
 ├── README.md                        # Project description
 ├── docker-compose.yml               # File for managing all services

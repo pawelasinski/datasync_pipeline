@@ -9,12 +9,21 @@ from flatbuffers_schema.MetricsRequest import MetricsRequest as FlatMetricsReque
 logger = logging.getLogger(__name__)
 
 
-def measure_deserialize_performance(metrics):
-    base_path = os.getenv("RESULTS_PATH")
+def measure_deserialize_performance(metrics: list) -> None:
+    """Measure and log the deserialization performance of metrics in JSON, Protobuf, and FlatBuffers formats.
 
-    json_path = f"{base_path}/metrics.json"
-    proto_path = f"{base_path}/metrics.proto.bin"
-    flat_path = f"{base_path}/metrics.flatbuf"
+    This function reads serialized metrics from files, measures the time taken to deserialize them,
+    logs the results, and saves the deserialization times to a JSON file.
+
+    Args:
+        metrics: List of metrics (used only for logging the count; format not enforced here).
+
+    """
+    results_path = os.getenv("RESULTS_PATH")
+
+    json_path = f"{results_path}/metrics.json"
+    proto_path = f"{results_path}/metrics.proto.bin"
+    flat_path = f"{results_path}/metrics.flatbuf"
     if not (os.path.exists(json_path) and os.path.exists(proto_path) and os.path.exists(flat_path)):
         logger.error("Metrics files not found for performance measurement.")
         return
@@ -38,7 +47,7 @@ def measure_deserialize_performance(metrics):
 
     # Measure FlatBuffers deserialization time.
     start_time = time.time()
-    with open(f"{base_path}/metrics.flatbuf", "rb") as f_flat:
+    with open(f"{results_path}/metrics.flatbuf", "rb") as f_flat:
         flat_data = FlatMetricsRequest.GetRootAsMetricsRequest(f_flat.read(), 0)
     flat_deser_time = time.time() - start_time
     flat_size = os.path.getsize(proto_path)
@@ -50,7 +59,7 @@ def measure_deserialize_performance(metrics):
         "flat_deser_time": flat_deser_time
     }
 
-    with open(f"{base_path}/deserialize_times.json", "w") as f_deserialize_times:
+    with open(f"{results_path}/deserialize_times.json", "w") as f_deserialize_times:
         json.dump(deserialize_times, f_deserialize_times)
 
     logger.info("Processed %d metrics in performance measurement.", len(metrics))

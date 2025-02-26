@@ -2,6 +2,7 @@ import os
 import logging
 import time
 import json
+from typing import Union
 
 import grpc
 
@@ -20,7 +21,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def check_metrics(metrics):
+def check_metrics(metrics: list[dict[str, Union[str, float]]]) -> None:
+    """Validate the structure and content of generated metrics.
+
+    Args:
+        metrics: List of metrics to validate.
+
+    Raises:
+        ValueError: If metrics are empty, not a list, or missing required fields.
+
+    """
     if not metrics or not isinstance(metrics, list):
         logger.error("Generated metrics are empty or invalid.")
         raise ValueError("Metrics must be a non-empty list.")
@@ -32,7 +42,16 @@ def check_metrics(metrics):
     return
 
 
-def run():
+def run() -> None:
+    """Execute the client process: generate metrics, serialize them, and send to the gRPC server.
+
+    This function handles metric generation, serialization timing, saving results, and communication
+    with a gRPC server.
+
+    Raises:
+        Exception: If any step (metric generation, serialization, or gRPC communication) fails.
+
+    """
     server_host = os.getenv("SERVER_HOST")
     logger.info("Starting client, connecting to %s:50051", server_host)
 
@@ -67,10 +86,10 @@ def run():
             "flat_ser_time": flat_ser_time
         }
 
-        base_path = os.getenv("RESULTS_PATH")
-        os.makedirs(base_path, exist_ok=True)
+        results_path = os.getenv("RESULTS_PATH")
+        os.makedirs(results_path, exist_ok=True)
         try:
-            with open(f"{base_path}/serialize_times.json", "w") as f_serialize_times:
+            with open(f"{results_path}/serialize_times.json", "w") as f_serialize_times:
                 json.dump(serialize_times, f_serialize_times)
             logger.info("Serialization times saved to serialize_times.json")
         except Exception as e:
