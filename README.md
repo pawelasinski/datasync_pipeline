@@ -9,8 +9,6 @@ This mini-project showcases how to use **Protobuf** and **FlatBuffers** for data
 - Data transfer via gRPC.
 - Comparison of file sizes and serialization/deserialization times.
 - Graph generation using Matplotlib.
-- _Logging of all operations to files and the console._
-- _Error checking (server availability, data correctness)._
 
 ## Prerequisites
 
@@ -21,7 +19,7 @@ This mini-project showcases how to use **Protobuf** and **FlatBuffers** for data
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/pawelasinski/datasync_pipeline.git
+   git clone git@github.com:pawelasinski/datasync_pipeline.git
    cd datasync_pipeline
    ```
 
@@ -71,8 +69,10 @@ datasync_pipeline/
 │   ├── logs/...                        # Folder for logs (created automatically)
 │   └── ...                             # Data files and graphs
 ├── README.md                        # Project description
+├── .gitignore                       # Git ignore file
+├── LICENSE                          # Project license
 ├── docker-compose.yml               # File for managing all services
-└── requirements.txt                 # Dependencies
+└── requirements.txt                 # Python dependencies
 ```
 
 ## Example Logs
